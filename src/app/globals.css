@@ -1,0 +1,194 @@
+@import "tailwindcss";
+
+:root {
+	--color-base: #000000;
+	--color-ink: #f3f4f6;
+	--color-night: #000000;
+	--color-panel: #050505;
+	--color-panel-strong: #0a0a0a;
+	--color-sand: #e5e7eb;
+	--color-mint: #111111;
+	--color-sky: #161616;
+	--color-sea: #9f9f9f;
+	--color-coral: #1e1e1e;
+	--color-border: rgba(229, 231, 235, 0.16);
+	--color-muted: rgba(229, 231, 235, 0.68);
+	--shadow-card: 0 18px 42px rgba(0, 0, 0, 0.58);
+	--shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.46);
+	--mx: 50vw;
+	--my: 35vh;
+	--mxp: 50%;
+	--myp: 35%;
+	--laser-opacity: 1;
+}
+
+@theme inline {
+	--color-background: var(--color-base);
+	--color-foreground: var(--color-ink);
+	--font-sans: var(--font-sans);
+	--font-mono: var(--font-mono);
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html {
+	min-height: 100%;
+	background-color: var(--color-base);
+}
+
+body {
+	background:
+		repeating-linear-gradient(
+			90deg,
+			rgba(255, 255, 255, 0.012) 0,
+			rgba(255, 255, 255, 0.012) 1px,
+			transparent 1px,
+			transparent 40px
+		),
+		linear-gradient(180deg, #030303 0%, #000000 100%);
+	background-color: var(--color-base);
+	color: var(--color-ink);
+	font-family: var(--font-sans), sans-serif;
+	min-height: 100%;
+	position: relative;
+	isolation: isolate;
+	overflow-x: clip;
+}
+
+body::before,
+body::after {
+	content: "";
+	position: fixed;
+	inset: -14%;
+	pointer-events: none;
+	z-index: 0;
+	will-change: transform;
+	contain: layout style paint;
+	transition: opacity 150ms ease-out;
+}
+
+body > * {
+	position: relative;
+	z-index: 1;
+}
+
+body::before {
+	background:
+		radial-gradient(
+			68rem 40rem at var(--mx) var(--my),
+			rgba(239, 68, 68, 0.24),
+			transparent 54%
+		),
+		linear-gradient(
+			122deg,
+			transparent 30%,
+			rgba(220, 38, 38, 0.28) 44%,
+			transparent 56%
+		),
+		linear-gradient(
+			64deg,
+			transparent 38%,
+			rgba(34, 197, 94, 0.2) 50%,
+			transparent 62%
+		);
+	filter: blur(8px);
+	opacity: calc(0.88 * var(--laser-opacity));
+	mix-blend-mode: screen;
+	transform: translate3d(
+		calc((var(--mx) - 50vw) / 14),
+		calc((var(--my) - 50vh) / 14),
+		0
+	);
+	backface-visibility: hidden;
+	-webkit-font-smoothing: antialiased;
+}
+
+body::after {
+	background:
+		radial-gradient(
+			50rem 28rem at calc(100% - var(--mx)) calc(100% - var(--my)),
+			rgba(248, 113, 113, 0.22),
+			transparent 56%
+		),
+		linear-gradient(
+			154deg,
+			transparent 24%,
+			rgba(250, 204, 21, 0.2) 42%,
+			transparent 58%
+		),
+		linear-gradient(
+			44deg,
+			transparent 42%,
+			rgba(14, 165, 233, 0.18) 50%,
+			transparent 58%
+		);
+	filter: blur(12px);
+	opacity: calc(0.78 * var(--laser-opacity));
+	mix-blend-mode: screen;
+	transform: translate3d(
+		calc((50vw - var(--mx)) / 18),
+		calc((50vh - var(--my)) / 18),
+		0
+	);
+	backface-visibility: hidden;
+	-webkit-font-smoothing: antialiased;
+}
+
+a,
+button,
+input,
+textarea,
+select {
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease,
+		opacity 160ms ease,
+		transform 160ms ease,
+		box-shadow 160ms ease;
+}
+
+::selection {
+	background: rgba(255, 255, 255, 0.24);
+	color: #09090b;
+}
+
+.card-surface {
+	background: linear-gradient(180deg, #090909 0%, #040404 100%);
+	box-shadow: var(--shadow-card);
+}
+
+.glass-surface {
+	background: rgba(9, 9, 9, 0.94);
+	box-shadow: var(--shadow-soft);
+}
+
+.mesh-panel {
+	background: linear-gradient(
+		180deg,
+		rgba(12, 12, 12, 0.98),
+		rgba(4, 4, 4, 0.96)
+	);
+}
+
+.field-ring {
+	box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.2);
+}
+
+.step-enter {
+	animation: step-enter 320ms ease;
+}
+
+@keyframes step-enter {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
