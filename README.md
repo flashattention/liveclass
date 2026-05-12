@@ -15,6 +15,8 @@
 
 # 실행 방법
 
+- 권장 Node.js 버전: 20 이상
+
 ```bash
 npm install
 npm run dev
@@ -22,11 +24,19 @@ npm run dev
 
 브라우저에서 http://localhost:3000 으로 접속합니다.
 
+## 기타 스크립트
+
+```bash
+npm run test
+npm run build
+npm run start
+```
+
 # Mock 데이터/서버 구성 방법
 
 - 별도 서버를 두지 않고 Next.js App Router의 route handler로 mock API를 구성했습니다.
 - 강의 목록 조회는 src/app/api/courses/route.ts, 신청 제출은 src/app/api/enrollments/route.ts 에 구현했습니다.
-- 목 데이터와 인메모리 상태는 src/lib/mock-data.ts 에서 관리합니다.
+- Mock 데이터와 인메모리 상태는 src/lib/mock-data.ts 에서 관리합니다.
 - npm run dev 실행 시 프론트엔드와 mock API가 함께 구동됩니다.
 - 서버를 재시작하면 신청 이력, 정원 상태, 중복 신청 기록은 초기화됩니다.
 
@@ -52,6 +62,12 @@ npm run dev
 - App Router를 선택한 이유는 과제 권장사항을 반영하면서도 mock API를 같은 리포지토리 안에서 route handler로 단순하게 구현할 수 있기 때문입니다.
 - TanStack Query는 강의 목록 조회와 제출 mutation의 로딩/에러 상태를 일관되게 다루기 위해 사용했습니다.
 - Zod 스키마를 클라이언트와 서버에서 공유해 검증 규칙의 분산을 줄였습니다.
+
+# 주요 검증 규칙
+
+- 이메일: `local@domain.tld` 형식이며 TLD는 2자 이상이어야 합니다.
+- 전화번호: 입력값에서 숫자만 추출한 뒤 한국 휴대폰 번호 패턴(010/011/016/017/018/019, 총 10~11자리)으로 검증합니다.
+- 단체 신청: 참가자 이메일 중복 불가, 참가자 수와 신청 인원수 일치가 필요합니다.
 
 # 미구현 / 제약사항
 
