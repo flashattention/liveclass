@@ -1,6 +1,58 @@
 import { describe, expect, it } from "vitest";
 import { toEnrollmentRequest } from "@/lib/transform";
-import { defaultEnrollmentDraft, submitSchema } from "@/lib/validation";
+import {
+	courseStepSchema,
+	defaultEnrollmentDraft,
+	groupApplicantStepSchema,
+	personalApplicantStepSchema,
+	submitSchema,
+} from "@/lib/validation";
+
+describe("step schemas", () => {
+	it("Step1에서 강의를 선택하지 않으면 실패한다", () => {
+		const result = courseStepSchema.safeParse({
+			courseId: "",
+			type: "personal",
+		});
+
+		expect(result.success).toBe(false);
+	});
+
+	it("개인 신청 Step2는 applicant 정보만으로 통과한다", () => {
+		const result = personalApplicantStepSchema.safeParse({
+			applicant: {
+				name: "홍길동",
+				email: "hong@example.com",
+				phone: "010-1234-5678",
+				motivation: "실무 역량 강화를 위해 신청합니다.",
+			},
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it("단체 신청 Step2는 group 규칙까지 함께 검증한다", () => {
+		const result = groupApplicantStepSchema.safeParse({
+			applicant: {
+				name: "홍길동",
+				email: "hong@example.com",
+				phone: "010-1234-5678",
+				motivation: "팀 교육 목적입니다.",
+			},
+			group: {
+				organizationName: "라이브클래스",
+				headCount: 2,
+				contactPerson: "010-2222-3333",
+				participants: [
+					{ name: "김하나", email: "team@example.com" },
+					{ name: "이둘", email: "team@example.com" },
+				],
+			},
+		});
+
+		expect(result.success).toBe(false);
+	});
+});
 
 describe("submitSchema", () => {
 	it("개인 신청 필수값이 모두 있으면 통과한다", () => {

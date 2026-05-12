@@ -97,6 +97,20 @@ export const groupSchema = z
 		});
 	});
 
+export const courseStepSchema = z.object({
+	courseId: z.string().min(1, "강의를 선택해 주세요."),
+	type: z.enum(["personal", "group"]),
+});
+
+export const personalApplicantStepSchema = z.object({
+	applicant: applicantSchema,
+});
+
+export const groupApplicantStepSchema = z.object({
+	applicant: applicantSchema,
+	group: groupSchema,
+});
+
 export const enrollmentDraftSchema = z
 	.object({
 		courseId: z.string().min(1, "강의를 선택해 주세요."),

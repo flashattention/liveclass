@@ -5,6 +5,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	FormProvider,
+	type Path,
 	useFieldArray,
 	useForm,
 	useWatch,
@@ -17,8 +18,11 @@ import type {
 import { fetchCourses, submitEnrollment } from "@/lib/api";
 import {
 	buildParticipantList,
+	courseStepSchema,
 	defaultEnrollmentDraft,
 	enrollmentDraftSchema,
+	groupApplicantStepSchema,
+	personalApplicantStepSchema,
 	submitSchema,
 	type EnrollmentDraftInput,
 } from "@/lib/validation";
@@ -70,6 +74,48 @@ export function EnrollmentApp() {
 		setValue,
 		trigger,
 	} = methods;
+
+	type EnrollmentFieldPath = Path<EnrollmentDraftInput>;
+
+	const applicantStepFieldPaths = [
+		"applicant.name",
+		"applicant.email",
+		"applicant.phone",
+		"applicant.motivation",
+	] as const satisfies EnrollmentFieldPath[];
+	const groupStepFieldPaths = [
+		"group.organizationName",
+		"group.headCount",
+		"group.participants",
+		"group.contactPerson",
+	] as const satisfies EnrollmentFieldPath[];
+
+	const getFocusableFieldPath = (path: string): EnrollmentFieldPath => {
+		if (path === "group.participants") {
+			return "group.participants.0.name";
+		}
+
+		return path as EnrollmentFieldPath;
+	};
+
+	const applyValidationIssues = (
+		issues: Array<{ path: PropertyKey[]; message: string }>,
+	) => {
+		issues.forEach((issue) => {
+			const path = issue.path.join(".");
+			if (!path) return;
+
+			setError(path as EnrollmentFieldPath, {
+				type: "manual",
+				message: issue.message,
+			});
+		});
+
+		const firstPath = issues.find((issue) => issue.path.length > 0);
+		if (firstPath) {
+			setFocus(getFocusableFieldPath(firstPath.path.join(".")));
+		}
+	};
 
 	const draftValues = useWatch({ control });
 	const watchedType = useWatch({ control, name: "type" });
@@ -255,73 +301,48 @@ export function EnrollmentApp() {
 	}, []);
 
 	const goToApplicantStep = async () => {
-		const isValid = await trigger(["courseId", "type"]);
-		if (!isValid) {
-			if (getFieldState("courseId").error) setFocus("courseId");
+		clearErrors(["courseId", "type"]);
+		const result = courseStepSchema.safeParse({
+			courseId: getValues("courseId"),
+			type: getValues("type"),
+		});
+
+		if (!result.success) {
+			applyValidationIssues(result.error.issues);
 			return;
 		}
 		nextStep();
 	};
 
 	const goToReviewStep = async () => {
-		const baseFields = [
-			"applicant.name",
-			"applicant.email",
-			"applicant.phone",
-			"applicant.motivation",
-		] as const;
-		const groupFields = [
-			"group.organizationName",
-			"group.headCount",
-			"group.participants",
-			"group.contactPerson",
-		] as const;
-		const isValid = await trigger(
+		clearErrors(
 			watchedType === "group"
-				? [...baseFields, ...groupFields]
-				: baseFields,
+				? [...applicantStepFieldPaths, ...groupStepFieldPaths]
+				: applicantStepFieldPaths,
 		);
-		if (!isValid) {
-			if (
-				watchedType === "group" &&
-				getFieldState("group.organizationName").error
-			) {
-				setFocus("group.organizationName");
-				return;
-			}
 
-			if (getFieldState("applicant.name").error) {
-				setFocus("applicant.name");
-				return;
-			}
+		const result =
+			watchedType === "group"
+				? groupApplicantStepSchema.safeParse({
+						applicant: getValues("applicant"),
+						group: getValues("group"),
+					})
+				: personalApplicantStepSchema.safeParse({
+						applicant: getValues("applicant"),
+					});
 
-			if (getFieldState("applicant.email").error) {
-				setFocus("applicant.email");
-				return;
-			}
-
-			setFocus("applicant.phone");
+		if (!result.success) {
+			applyValidationIssues(result.error.issues);
 			return;
 		}
 		nextStep();
 	};
 
 	const onSubmit = handleSubmit(async (values) => {
+		setSubmitError(null);
 		const parsed = submitSchema.safeParse(values);
 		if (!parsed.success) {
-			parsed.error.issues.forEach((issue) => {
-				const path = issue.path.join(".");
-				if (path === "agreedToTerms") {
-					setError("agreedToTerms", {
-						type: "manual",
-						message: issue.message,
-					});
-				}
-			});
-
-			const firstIssue = parsed.error.issues[0];
-			if (firstIssue?.path.join(".") === "agreedToTerms")
-				setFocus("agreedToTerms");
+			applyValidationIssues(parsed.error.issues);
 			return;
 		}
 
