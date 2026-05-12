@@ -38,8 +38,8 @@ export function EnrollmentSidebar({
 			<p className="text-xs font-semibold uppercase tracking-[0.16em] text-(--color-sea)">
 				LiveClass
 			</p>
-			<h1 className="mt-4 max-w-[12ch] font-(family-name:--font-display) text-4xl leading-tight sm:text-5xl">
-				LiveClass
+			<h1 className="mt-4 max-w-[12ch] text-4xl leading-tight sm:text-5xl">
+				LIVE CLASS
 			</h1>
 			<p className="mt-4 max-w-[30ch] text-sm leading-7 text-(--color-muted)">
 				관심 있는 강의를 고르고, 필요한 정보만 입력한 뒤 한 번에 접수할

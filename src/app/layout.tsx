@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import {
+	IBM_Plex_Sans_KR,
+	JetBrains_Mono,
+	Noto_Serif_KR,
+} from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const sans = Inter({
+const sans = IBM_Plex_Sans_KR({
 	variable: "--font-sans",
+	weight: ["300", "400", "500", "600", "700"],
 	subsets: ["latin"],
 });
 
-const serif = Fraunces({
+const serif = Noto_Serif_KR({
 	variable: "--font-display",
+	weight: ["500", "700"],
 	subsets: ["latin"],
 });
 

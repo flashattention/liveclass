@@ -18,7 +18,7 @@ export function SuccessScreen({ success, onReset }: SuccessScreenProps) {
 					신청이 접수되었습니다.
 				</h1>
 				<p className="mt-4 text-base leading-7 text-(--color-muted)">
-					신청 번호와 요약 정보를 확인해 주세요. 동일한 브라우저에서는
+					신청 번호와 요약 정보를 확인해 주세요. 동일한 브라우저에서
 					새 신청을 다시 진행할 수 있습니다.
 				</p>
 
