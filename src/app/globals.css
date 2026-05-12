@@ -70,23 +70,23 @@ body::before {
 	background:
 		radial-gradient(
 			68rem 40rem at var(--mx) var(--my),
-			rgba(239, 68, 68, 0.24),
+			rgba(239, 68, 68, 0.27),
 			transparent 54%
 		),
 		linear-gradient(
 			122deg,
 			transparent 30%,
-			rgba(251, 191, 36, 0.2) 44%,
+			rgba(251, 191, 36, 0.23) 44%,
 			transparent 56%
 		),
 		linear-gradient(
 			64deg,
 			transparent 38%,
-			rgba(34, 197, 94, 0.17) 50%,
+			rgba(34, 197, 94, 0.2) 50%,
 			transparent 62%
 		);
 	filter: blur(8px);
-	opacity: calc(0.9 * var(--laser-opacity));
+	opacity: calc(0.95 * var(--laser-opacity));
 	mix-blend-mode: screen;
 	transform: translate3d(
 		calc((var(--mx) - 50vw) / 14),
@@ -101,23 +101,23 @@ body::after {
 	background:
 		radial-gradient(
 			50rem 28rem at calc(100% - var(--mx)) calc(100% - var(--my)),
-			rgba(251, 191, 36, 0.19),
+			rgba(251, 191, 36, 0.22),
 			transparent 56%
 		),
 		linear-gradient(
 			154deg,
 			transparent 24%,
-			rgba(34, 197, 94, 0.16) 42%,
+			rgba(34, 197, 94, 0.19) 42%,
 			transparent 58%
 		),
 		linear-gradient(
 			44deg,
 			transparent 42%,
-			rgba(239, 68, 68, 0.14) 50%,
+			rgba(239, 68, 68, 0.17) 50%,
 			transparent 58%
 		);
 	filter: blur(11px);
-	opacity: calc(0.82 * var(--laser-opacity));
+	opacity: calc(0.88 * var(--laser-opacity));
 	mix-blend-mode: screen;
 	transform: translate3d(
 		calc((50vw - var(--mx)) / 18),
