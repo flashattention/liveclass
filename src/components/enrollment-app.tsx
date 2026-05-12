@@ -168,6 +168,36 @@ export function EnrollmentApp() {
 			window.removeEventListener("beforeunload", handleBeforeUnload);
 	}, [hasDirtyDraft, success]);
 
+	// 브라우저 뒤로가기 이탈 방지
+	useEffect(() => {
+		const handlePopState = () => {
+			if (!hasDirtyDraft || success) return;
+
+			const shouldLeave = window.confirm(
+				"입력 중인 내용이 있습니다. 페이지를 나가시겠습니까?",
+			);
+
+			if (!shouldLeave) {
+				window.history.pushState(
+					{ guard: "enrollment" },
+					"",
+					window.location.href,
+				);
+			}
+		};
+
+		window.history.pushState(
+			{ guard: "enrollment" },
+			"",
+			window.location.href,
+		);
+		window.addEventListener("popstate", handlePopState);
+
+		return () => {
+			window.removeEventListener("popstate", handlePopState);
+		};
+	}, [hasDirtyDraft, success]);
+
 	// 마우스 포인터 + 스크롤 레이저 효과
 	useEffect(() => {
 		let rafId = 0;
