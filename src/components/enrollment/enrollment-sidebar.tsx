@@ -22,14 +22,14 @@ export const stepLabels = [
 
 interface EnrollmentSidebarProps {
 	step: number;
-	isDirty: boolean;
+	hasDirtyDraft: boolean;
 	watchedType: EnrollmentDraftInput["type"];
 	selectedCourse: Course | null;
 }
 
 export function EnrollmentSidebar({
 	step,
-	isDirty,
+	hasDirtyDraft,
 	watchedType,
 	selectedCourse,
 }: EnrollmentSidebarProps) {
@@ -52,7 +52,7 @@ export function EnrollmentSidebar({
 						작성 상태
 					</p>
 					<p className="mt-2 text-lg font-semibold text-foreground">
-						{isDirty ? "작성 중" : "새 신청"}
+						{hasDirtyDraft ? "작성 중" : "새 신청"}
 					</p>
 				</div>
 				<div className="rounded-2xl border border-(--color-border) bg-(--color-panel-strong) p-4">

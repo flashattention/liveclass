@@ -39,6 +39,9 @@ export function EnrollmentApp() {
 
 	const step = useEnrollmentFlowStore((state) => state.step);
 	const category = useEnrollmentFlowStore((state) => state.category);
+	const hasDirtyDraft = useEnrollmentFlowStore(
+		(state) => state.hasDirtyDraft,
+	);
 	const setStep = useEnrollmentFlowStore((state) => state.setStep);
 	const nextStep = useEnrollmentFlowStore((state) => state.nextStep);
 	const prevStep = useEnrollmentFlowStore((state) => state.prevStep);
@@ -156,14 +159,14 @@ export function EnrollmentApp() {
 	// beforeunload 경고
 	useEffect(() => {
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-			if (!isDirty || success) return;
+			if (!hasDirtyDraft || success) return;
 			event.preventDefault();
 			event.returnValue = "";
 		};
 		window.addEventListener("beforeunload", handleBeforeUnload);
 		return () =>
 			window.removeEventListener("beforeunload", handleBeforeUnload);
-	}, [isDirty, success]);
+	}, [hasDirtyDraft, success]);
 
 	// 마우스 포인터 + 스크롤 레이저 효과
 	useEffect(() => {
@@ -351,7 +354,7 @@ export function EnrollmentApp() {
 				<section className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-8">
 					<EnrollmentSidebar
 						step={step}
-						isDirty={isDirty}
+						hasDirtyDraft={hasDirtyDraft}
 						watchedType={watchedType}
 						selectedCourse={selectedCourse}
 					/>
