@@ -117,6 +117,24 @@ export function EnrollmentApp() {
 		}
 	};
 
+	const applyServerFieldErrors = (details?: Record<string, string>) => {
+		if (!details || Object.keys(details).length === 0) {
+			return;
+		}
+
+		Object.entries(details).forEach(([path, message]) => {
+			setError(path as EnrollmentFieldPath, {
+				type: "server",
+				message,
+			});
+		});
+
+		const [firstPath] = Object.keys(details);
+		if (firstPath) {
+			setFocus(getFocusableFieldPath(firstPath));
+		}
+	};
+
 	const draftValues = useWatch({ control });
 	const watchedType = useWatch({ control, name: "type" });
 	const watchedCourseId = useWatch({ control, name: "courseId" });
@@ -161,7 +179,10 @@ export function EnrollmentApp() {
 			setSubmitError(null);
 			setDirtyDraft(false);
 		},
-		onError: (error) => setSubmitError(error),
+		onError: (error) => {
+			setSubmitError(error);
+			applyServerFieldErrors(error.details);
+		},
 	});
 
 	// localStorage 복구
