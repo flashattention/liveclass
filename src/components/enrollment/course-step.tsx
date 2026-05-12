@@ -47,10 +47,9 @@ export function CourseStep({
 	onRequestTypeChange,
 	onNext,
 }: CourseStepProps) {
-	const {
-		register,
-		formState: { errors },
-	} = useFormContext<EnrollmentDraftInput>();
+	const form = useFormContext<EnrollmentDraftInput>();
+	const { register } = form;
+	const { errors } = form.formState;
 
 	const watchedCourseId = useWatch<EnrollmentDraftInput, "courseId">({
 		name: "courseId",
@@ -70,7 +69,7 @@ export function CourseStep({
 						Step 1
 					</p>
 					<h2 className="mt-2 text-3xl font-semibold">
-						강의와 신청 유형을 선택해 주세요.
+						강의 및 신청 유형
 					</h2>
 				</div>
 				<div className="flex flex-wrap gap-2 rounded-xl border border-(--color-border) bg-(--color-panel-strong) p-1.5">
@@ -123,8 +122,11 @@ export function CourseStep({
 							key={course.id}
 							className={cn(
 								"relative flex cursor-pointer flex-col rounded-2xl border p-5",
+								errors.courseId && !isSelected
+									? "border-red-500"
+									: "",
 								isSelected
-									? "border-(--color-sea) bg-(--color-mint)/35"
+									? "border-white bg-(--color-mint)/35"
 									: "border-(--color-border) bg-(--color-panel) hover:border-(--color-sea)/40",
 								isClosed && "cursor-not-allowed opacity-58",
 							)}
@@ -248,7 +250,7 @@ export function CourseStep({
 							className={cn(
 								"rounded-xl border p-4 text-left",
 								watchedType === option.value
-									? "border-(--color-sea) bg-(--color-mint)/30"
+									? "border-white bg-(--color-mint)/30"
 									: "border-(--color-border) bg-(--color-panel) hover:border-(--color-sea)/40",
 							)}
 						>
