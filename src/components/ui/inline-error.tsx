@@ -14,9 +14,11 @@ export function InlineError({
 	return (
 		<p
 			className={cn(
-				"mt-2 text-sm",
-				tone === "danger" ? "text-[#a11a1a]" : "text-[#b42318]",
+				"mt-2 text-sm font-medium",
+				tone === "danger" ? "text-red-500" : "text-red-400",
 			)}
+			role="alert"
+			aria-live="polite"
 		>
 			{message}
 		</p>

@@ -1,4 +1,9 @@
-import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import {
+	useFieldArray,
+	useFormContext,
+	useFormState,
+	useWatch,
+} from "react-hook-form";
 import { formatPhoneNumber } from "@/lib/utils";
 import { Field } from "@/components/ui/field";
 import { InlineError } from "@/components/ui/inline-error";
@@ -11,10 +16,11 @@ interface ApplicantStepProps {
 }
 
 export function ApplicantStep({ onNext, onPrev }: ApplicantStepProps) {
-	const {
-		register,
-		formState: { errors },
-	} = useFormContext<EnrollmentDraftInput>();
+	const form = useFormContext<EnrollmentDraftInput>();
+	const { register } = form;
+	const { errors } = useFormState<EnrollmentDraftInput>({
+		control: form.control,
+	});
 
 	const watchedType = useWatch<EnrollmentDraftInput, "type">({
 		name: "type",

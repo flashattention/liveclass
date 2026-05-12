@@ -19,6 +19,38 @@ describe("submitSchema", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("010-8939-9977 형식의 휴대폰 번호를 허용한다", () => {
+		const result = submitSchema.safeParse({
+			...defaultEnrollmentDraft,
+			courseId: "dev-react-bootcamp",
+			applicant: {
+				name: "홍길동",
+				email: "hong@example.com",
+				phone: "010-8939-9977",
+				motivation: "실무 역량 강화를 위해 신청합니다.",
+			},
+			agreedToTerms: true,
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it("TLD가 1자인 이메일을 거부한다", () => {
+		const result = submitSchema.safeParse({
+			...defaultEnrollmentDraft,
+			courseId: "dev-react-bootcamp",
+			applicant: {
+				name: "홍길동",
+				email: "a@a.a",
+				phone: "010-1234-5678",
+				motivation: "실무 역량 강화를 위해 신청합니다.",
+			},
+			agreedToTerms: true,
+		});
+
+		expect(result.success).toBe(false);
+	});
+
 	it("단체 신청에서 참가자 이메일 중복을 막는다", () => {
 		const result = submitSchema.safeParse({
 			...defaultEnrollmentDraft,

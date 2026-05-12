@@ -1,7 +1,7 @@
 import { useFormContext, useWatch } from "react-hook-form";
 import type { Course } from "@/lib/types";
 import type { ErrorResponse } from "@/lib/types";
-import { formatDateRange, formatPrice } from "@/lib/utils";
+import { cn, formatDateRange, formatPrice } from "@/lib/utils";
 import { InlineError } from "@/components/ui/inline-error";
 import { SummaryItem, SummarySection } from "@/components/ui/summary";
 import { type EnrollmentDraftInput } from "@/lib/validation";
@@ -33,11 +33,9 @@ export function ReviewStep({
 	onGoToStep,
 	onSubmit,
 }: ReviewStepProps) {
-	const {
-		register,
-		getValues,
-		formState: { errors, isSubmitting },
-	} = useFormContext<EnrollmentDraftInput>();
+	const form = useFormContext<EnrollmentDraftInput>();
+	const { register, getValues } = form;
+	const { errors, isSubmitting } = form.formState;
 
 	const watchedType = useWatch<EnrollmentDraftInput, "type">({
 		name: "type",
@@ -170,10 +168,17 @@ export function ReviewStep({
 				</SummarySection>
 			)}
 
-			<label className="flex items-start gap-3 rounded-xl border border-(--color-border) bg-(--color-panel-strong) p-4">
+			<label
+				className={cn(
+					"flex items-start gap-3 rounded-xl border bg-(--color-panel-strong) p-4",
+					errors.agreedToTerms
+						? "border-red-500"
+						: "border-(--color-border)",
+				)}
+			>
 				<input
 					type="checkbox"
-					className="mt-1 h-4 w-4"
+					className="mt-1 h-4 w-4 border-red-500"
 					{...register("agreedToTerms")}
 				/>
 				<span>

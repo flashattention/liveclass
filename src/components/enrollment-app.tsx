@@ -3,8 +3,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
-import type { EnrollmentResponse, EnrollmentSuccess, ErrorResponse } from "@/lib/types";
+import {
+	FormProvider,
+	useFieldArray,
+	useForm,
+	useWatch,
+} from "react-hook-form";
+import type {
+	EnrollmentResponse,
+	EnrollmentSuccess,
+	ErrorResponse,
+} from "@/lib/types";
 import { fetchCourses, submitEnrollment } from "@/lib/api";
 import {
 	buildParticipantList,
@@ -34,7 +43,9 @@ export function EnrollmentApp() {
 	const nextStep = useEnrollmentFlowStore((state) => state.nextStep);
 	const prevStep = useEnrollmentFlowStore((state) => state.prevStep);
 	const setCategory = useEnrollmentFlowStore((state) => state.setCategory);
-	const setDirtyDraft = useEnrollmentFlowStore((state) => state.setDirtyDraft);
+	const setDirtyDraft = useEnrollmentFlowStore(
+		(state) => state.setDirtyDraft,
+	);
 	const resetFlow = useEnrollmentFlowStore((state) => state.resetFlow);
 
 	const methods = useForm<EnrollmentDraftInput>({
@@ -46,9 +57,12 @@ export function EnrollmentApp() {
 	const {
 		control,
 		formState: { errors, isDirty, isSubmitting },
+		clearErrors,
+		getFieldState,
 		getValues,
 		handleSubmit,
 		reset,
+		setError,
 		setFocus,
 		setValue,
 		trigger,
@@ -59,7 +73,10 @@ export function EnrollmentApp() {
 	const watchedCourseId = useWatch({ control, name: "courseId" });
 	const watchedHeadCount = useWatch({ control, name: "group.headCount" });
 
-	const participantsFieldArray = useFieldArray({ control, name: "group.participants" });
+	const participantsFieldArray = useFieldArray({
+		control,
+		name: "group.participants",
+	});
 
 	const coursesQuery = useQuery({
 		queryKey: ["courses", category],
@@ -70,9 +87,14 @@ export function EnrollmentApp() {
 		() => coursesQuery.data?.courses ?? [],
 		[coursesQuery.data?.courses],
 	);
-	const selectedCourse = allCourses.find((c) => c.id === watchedCourseId) ?? null;
+	const selectedCourse =
+		allCourses.find((c) => c.id === watchedCourseId) ?? null;
 
-	const mutation = useMutation<EnrollmentResponse, ErrorResponse, EnrollmentDraftInput>({
+	const mutation = useMutation<
+		EnrollmentResponse,
+		ErrorResponse,
+		EnrollmentDraftInput
+	>({
 		mutationFn: submitEnrollment,
 		onSuccess: (result) => {
 			const snapshot = getValues();
@@ -124,7 +146,10 @@ export function EnrollmentApp() {
 		const current = getValues("group.participants");
 		if (current.length === nextCount) return;
 		participantsFieldArray.replace(
-			Array.from({ length: nextCount }, (_, i) => current[i] ?? { name: "", email: "" }),
+			Array.from(
+				{ length: nextCount },
+				(_, i) => current[i] ?? { name: "", email: "" },
+			),
 		);
 	}, [getValues, participantsFieldArray, watchedHeadCount, watchedType]);
 
@@ -136,7 +161,8 @@ export function EnrollmentApp() {
 			event.returnValue = "";
 		};
 		window.addEventListener("beforeunload", handleBeforeUnload);
-		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+		return () =>
+			window.removeEventListener("beforeunload", handleBeforeUnload);
 	}, [isDirty, success]);
 
 	// 마우스 포인터 + 스크롤 레이저 효과
@@ -144,29 +170,48 @@ export function EnrollmentApp() {
 		let rafId = 0;
 		let lastUpdate = 0;
 		let scrollTimeout: NodeJS.Timeout;
+		let isScrolling = false;
+		let lastPointerX = window.innerWidth / 2;
+		let lastPointerY = window.innerHeight / 2;
 		const THROTTLE_MS = 16;
 		const root = document.documentElement;
 
 		const updatePointerVars = (event: PointerEvent) => {
+			lastPointerX = event.clientX;
+			lastPointerY = event.clientY;
+			if (isScrolling) return;
+
 			const now = performance.now();
 			if (now - lastUpdate < THROTTLE_MS) return;
 			lastUpdate = now;
 			if (rafId) cancelAnimationFrame(rafId);
 			rafId = requestAnimationFrame(() => {
-				root.style.setProperty("--mx", `\${event.clientX}px`);
-				root.style.setProperty("--my", `\${event.clientY}px`);
+				root.style.setProperty("--mx", `${event.clientX}px`);
+				root.style.setProperty("--my", `${event.clientY}px`);
 			});
 		};
 
 		const handleScroll = () => {
-			root.style.setProperty("--laser-opacity", "0");
+			if (!isScrolling) {
+				isScrolling = true;
+				const styles = getComputedStyle(root);
+				const frozenMx = styles.getPropertyValue("--mx").trim();
+				const frozenMy = styles.getPropertyValue("--my").trim();
+				if (frozenMx) root.style.setProperty("--mx", frozenMx);
+				if (frozenMy) root.style.setProperty("--my", frozenMy);
+			}
+
 			if (scrollTimeout) clearTimeout(scrollTimeout);
 			scrollTimeout = setTimeout(() => {
-				root.style.setProperty("--laser-opacity", "1");
+				isScrolling = false;
+				root.style.setProperty("--mx", `${lastPointerX}px`);
+				root.style.setProperty("--my", `${lastPointerY}px`);
 			}, 150);
 		};
 
-		window.addEventListener("pointermove", updatePointerVars, { passive: true });
+		window.addEventListener("pointermove", updatePointerVars, {
+			passive: true,
+		});
 		window.addEventListener("scroll", handleScroll, { passive: true });
 		return () => {
 			window.removeEventListener("pointermove", updatePointerVars);
@@ -179,7 +224,7 @@ export function EnrollmentApp() {
 	const goToApplicantStep = async () => {
 		const isValid = await trigger(["courseId", "type"]);
 		if (!isValid) {
-			if (errors.courseId) setFocus("courseId");
+			if (getFieldState("courseId").error) setFocus("courseId");
 			return;
 		}
 		nextStep();
@@ -199,18 +244,30 @@ export function EnrollmentApp() {
 			"group.contactPerson",
 		] as const;
 		const isValid = await trigger(
-			watchedType === "group" ? [...baseFields, ...groupFields] : baseFields,
+			watchedType === "group"
+				? [...baseFields, ...groupFields]
+				: baseFields,
 		);
 		if (!isValid) {
-			setFocus(
-				watchedType === "group" && errors.group?.organizationName
-					? "group.organizationName"
-					: errors.applicant?.name
-						? "applicant.name"
-						: errors.applicant?.email
-							? "applicant.email"
-							: "applicant.phone",
-			);
+			if (
+				watchedType === "group" &&
+				getFieldState("group.organizationName").error
+			) {
+				setFocus("group.organizationName");
+				return;
+			}
+
+			if (getFieldState("applicant.name").error) {
+				setFocus("applicant.name");
+				return;
+			}
+
+			if (getFieldState("applicant.email").error) {
+				setFocus("applicant.email");
+				return;
+			}
+
+			setFocus("applicant.phone");
 			return;
 		}
 		nextStep();
@@ -219,10 +276,23 @@ export function EnrollmentApp() {
 	const onSubmit = handleSubmit(async (values) => {
 		const parsed = submitSchema.safeParse(values);
 		if (!parsed.success) {
+			parsed.error.issues.forEach((issue) => {
+				const path = issue.path.join(".");
+				if (path === "agreedToTerms") {
+					setError("agreedToTerms", {
+						type: "manual",
+						message: issue.message,
+					});
+				}
+			});
+
 			const firstIssue = parsed.error.issues[0];
-			if (firstIssue?.path.join(".") === "agreedToTerms") setFocus("agreedToTerms");
+			if (firstIssue?.path.join(".") === "agreedToTerms")
+				setFocus("agreedToTerms");
 			return;
 		}
+
+		clearErrors("agreedToTerms");
 		await mutation.mutateAsync(values);
 	});
 
@@ -233,7 +303,9 @@ export function EnrollmentApp() {
 			const hasGroupInput =
 				currentGroup.organizationName.trim() ||
 				currentGroup.contactPerson.trim() ||
-				currentGroup.participants.some((p) => p.name.trim() || p.email.trim());
+				currentGroup.participants.some(
+					(p) => p.name.trim() || p.email.trim(),
+				);
 			if (hasGroupInput) {
 				pendingTypeRef.current = nextType;
 				setGroupSwitchConfirmOpen(true);
@@ -244,10 +316,18 @@ export function EnrollmentApp() {
 	};
 
 	const confirmGroupReset = () => {
-		setValue("type", "personal", { shouldDirty: true, shouldValidate: true });
+		setValue("type", "personal", {
+			shouldDirty: true,
+			shouldValidate: true,
+		});
 		setValue(
 			"group",
-			{ organizationName: "", headCount: 2, participants: buildParticipantList(2), contactPerson: "" },
+			{
+				organizationName: "",
+				headCount: 2,
+				participants: buildParticipantList(2),
+				contactPerson: "",
+			},
 			{ shouldDirty: true },
 		);
 		setGroupSwitchConfirmOpen(false);
@@ -260,7 +340,9 @@ export function EnrollmentApp() {
 	};
 
 	if (success) {
-		return <SuccessScreen success={success} onReset={() => setSuccess(null)} />;
+		return (
+			<SuccessScreen success={success} onReset={() => setSuccess(null)} />
+		);
 	}
 
 	return (
@@ -295,7 +377,9 @@ export function EnrollmentApp() {
 							{step === 3 && (
 								<ReviewStep
 									selectedCourse={selectedCourse}
-									isPending={mutation.isPending || isSubmitting}
+									isPending={
+										mutation.isPending || isSubmitting
+									}
 									submitError={submitError}
 									onPrev={prevStep}
 									onGoToStep={setStep}
@@ -312,9 +396,12 @@ export function EnrollmentApp() {
 							<p className="text-sm font-semibold uppercase tracking-[0.22em] text-(--color-sea)">
 								유형 전환 확인
 							</p>
-							<h2 className="mt-3 text-2xl font-semibold">단체 정보를 초기화할까요?</h2>
+							<h2 className="mt-3 text-2xl font-semibold">
+								단체 정보를 초기화할까요?
+							</h2>
 							<p className="mt-3 text-sm leading-6 text-(--color-muted)">
-								개인 신청으로 바꾸면 참가자 명단과 단체 정보가 제거됩니다. 의도한 변경인지 확인해 주세요.
+								개인 신청으로 바꾸면 참가자 명단과 단체 정보가
+								제거됩니다. 의도한 변경인지 확인해 주세요.
 							</p>
 							<div className="mt-6 flex justify-end gap-3">
 								<button

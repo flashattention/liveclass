@@ -1,6 +1,23 @@
 import { z } from "zod";
 
-const koreanPhonePattern = /^(01[016789])-?\d{3,4}-?\d{4}$/;
+const koreanMobileDigitsPattern = /^01[016789]\d{7,8}$/;
+const strictEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+const normalizePhone = (value: string) => value.replace(/\D/g, "");
+
+const emailSchema = (message: string) =>
+	z
+		.email(message)
+		.refine((value) => strictEmailPattern.test(value.trim()), message);
+
+const phoneSchema = (message: string) =>
+	z
+		.string()
+		.trim()
+		.refine(
+			(value) => koreanMobileDigitsPattern.test(normalizePhone(value)),
+			message,
+		);
 
 export const applicantSchema = z.object({
 	name: z
@@ -8,11 +25,8 @@ export const applicantSchema = z.object({
 		.trim()
 		.min(2, "이름은 2자 이상 입력해 주세요.")
 		.max(20, "이름은 20자 이하로 입력해 주세요."),
-	email: z.email("올바른 이메일 형식을 입력해 주세요."),
-	phone: z
-		.string()
-		.trim()
-		.regex(koreanPhonePattern, "한국 전화번호 형식으로 입력해 주세요."),
+	email: emailSchema("올바른 이메일 형식을 입력해 주세요."),
+	phone: phoneSchema("한국 전화번호 형식으로 입력해 주세요."),
 	motivation: z
 		.string()
 		.trim()
@@ -27,7 +41,7 @@ export const participantSchema = z.object({
 		.trim()
 		.min(2, "참가자 이름은 2자 이상 입력해 주세요.")
 		.max(20, "참가자 이름은 20자 이하로 입력해 주세요."),
-	email: z.email("참가자 이메일 형식을 확인해 주세요."),
+	email: emailSchema("참가자 이메일 형식을 확인해 주세요."),
 });
 
 const participantDraftSchema = z.object({
@@ -55,13 +69,9 @@ export const groupSchema = z
 			.min(2, "단체 신청은 최소 2명부터 가능합니다.")
 			.max(10, "단체 신청은 최대 10명까지 가능합니다."),
 		participants: z.array(participantSchema),
-		contactPerson: z
-			.string()
-			.trim()
-			.regex(
-				koreanPhonePattern,
-				"담당자 연락처는 한국 전화번호 형식이어야 합니다.",
-			),
+		contactPerson: phoneSchema(
+			"담당자 연락처는 한국 전화번호 형식이어야 합니다.",
+		),
 	})
 	.superRefine((value, context) => {
 		if (value.participants.length !== value.headCount) {
